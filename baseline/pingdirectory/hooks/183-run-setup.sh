@@ -24,12 +24,6 @@ if test "${PD_STATE}" == "GENESIS" ; then
     TEMPLATE_DIR="${LDIF_DIR}"
     test -z "${MAKELDIF_USERS}" && MAKELDIF_USERS=0
 
-    # This INSTANCE_NAME must be unique across all instances, hence the addition
-    # of the K8S Cluster Name. This should be used in the PingDirectory profile
-    # setup-arguments.txt
-
-    export INSTANCE_NAME="$(hostname).${K8S_CLUSTER}"
-
     for template in $( find "${TEMPLATE_DIR}" -type f -iname \*.template 2>/dev/null ) ; do 
             echo "Processing (${template}) template with ${MAKELDIF_USERS} users..."
             "${SERVER_ROOT_DIR}/bin/make-ldif" \
@@ -78,6 +72,12 @@ encryptionOption=$( getEncryptionOption )
 jvmOptions=$( getJvmOptions )
 
 export certificateOptions encryptionOption jvmOptions 
+
+# This INSTANCE_NAME must be unique across all instances, hence the addition
+# of the K8S Cluster Name. This should be used in the PingDirectory profile
+# setup-arguments.txt
+
+export INSTANCE_NAME="$(hostname).${K8S_CLUSTER}"
 
 # TODO - Maybe allow for an ENV_VARS variable specifying a file (default to "${STAGING_DIR}/env_vars")
 
