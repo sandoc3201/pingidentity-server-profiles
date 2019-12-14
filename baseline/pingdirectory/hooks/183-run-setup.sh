@@ -27,8 +27,8 @@ if test "${PD_STATE}" == "GENESIS" ; then
     # This INSTANCE_NAME must be unique across all instances, hence the addition
     # of the K8S Cluster Name. This should be used in the PingDirectory profile
     # setup-arguments.txt
-    
-    INSTANCE_NAME="$(hostname).${K8S_CLUSTER}"
+
+    export INSTANCE_NAME="$(hostname).${K8S_CLUSTER}"
 
     for template in $( find "${TEMPLATE_DIR}" -type f -iname \*.template 2>/dev/null ) ; do 
             echo "Processing (${template}) template with ${MAKELDIF_USERS} users..."
