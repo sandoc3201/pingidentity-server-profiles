@@ -57,9 +57,13 @@ echo "Running ldapsearch test on SEED Server (${_seedInstanceName})"
 echo "        ${_seedHostname}:${_seedLdapsPort}"
 waitUntilLdapUp "${_seedHostname}" "${_seedLdapsPort}" ""
 
+_masterTopologyInstance=$(ldapsearch --terse --outputFormat json -b "cn=Mirrored subtree manager for base DN cn_Topology_cn_config,cn=monitor" -s base objectclass=* master-instance-name | jq -r .attributes[].values[])
+
 printf "
 #############################################
 # Enabling Replication
+#
+# Current Master Topology Instance: ${_masterTopologyInstance}
 #
 #   %60s        %-60s
 #   %60s  <-->  %-60s
