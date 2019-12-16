@@ -21,9 +21,9 @@
     --skipPortCheck \
     --licenseKeyFile ${PING_SERVER_ROOT}/PingDirectory.lic \
     --location "${LOCATION}" \
-    --instanceName ${INSTANCE_NAME} \
+    --instanceName ${_podInstanceName} \
     --ldapPort ${LDAP_PORT} \
-    --ldapsPort ${LDAPS_PORT} \
+    --ldapsPort ${_podLdapsPort} \
     --httpsPort ${HTTPS_PORT} \
     --enableStartTLS \
     ${jvmOptions} \

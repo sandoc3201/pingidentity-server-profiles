@@ -155,3 +155,74 @@ RUN_PLAN=${RUN_PLAN}
 
 PD_STATE=${PD_STATE}
 " >> "${STATE_PROPERTIES}"
+
+
+# DRAFT MODE Branch - Currently work in progress
+
+#
+# Check to see if we have the variables for single or multi cluster replication
+#
+if test -z "${K8S_CLUSTER}" ||
+   test -z "${SEED_CLUSTER}"; then
+    _clusterMode="single"
+    echo "Single Mode"
+else
+    _clusterMode="multi"
+    echo "Multi Mode"
+fi
+
+_podName=$(hostname)
+_ordinal=$(echo ${_podName##*-})
+_podInstanceName="$(hostname).${K8S_CLUSTER}"
+_seedInstanceName="${K8S_STATEFUL_SET_NAME}-0.${K8S_CLUSTER}"
+
+if test "${_clusterMode}" == "multi"; then
+    _podHostname="${K8S_STATEFUL_SET_NAME}.${K8S_CLUSTER}"
+    _podLdapsPort=$(( SEED_LDAPS_PORT + _ordinal ))
+    _podReplicationPort=$(( SEED_REPLICATION_PORT + _ordinal ))
+
+
+    _seedHostname="${K8S_STATEFUL_SET_NAME}.${SEED_CLUSTER}"
+    _seedLdapsPort="${SEED_LDAPS_PORT}"
+    _seedReplicationPort="${SEED_REPLICATION_PORT}"
+else
+    _podHostname="$(hostname)"
+    _podLdapsPort="${LDAPS_PORT}"
+    _podReplicationPort="${REPLICATION_PORT}"
+
+    _seedHostname="${K8S_STATEFUL_SET_NAME}-0"
+    _seedLdapsPort="${LDAPS_PORT}"
+    _seedReplicationPort="${REPLICATION_PORT}"
+fi
+
+echo "
+#############################################
+# ${_clusterMode} cluster mode
+#############################################
+# POD Information
+#     instance name : ${_podInstanceName}
+#          hostname : ${_podHostname}
+#        ldaps port : ${_podLdapsPort}
+#  replication port : ${_podReplicationPort}
+#
+# SEED Information
+#     instance name : ${_seedInstanceName}
+#          hostname : ${_seedHostname}
+#        ldaps port : ${_seedLdapsPort}
+#  replication port : ${_seedReplicationPort}
+#############################################
+"
+
+echo "
+_podInstanceName=${_podInstanceName}
+_podHostname=${_podHostname}
+_podLdapsPort=${_podLdapsPort}
+_podReplicationPort=${_podReplicationPort}
+
+_seedInstanceName=${_seedInstanceName}
+_seedHostname=${_seedHostname}
+_seedLdapsPort=${_seedLdapsPort}
+_seedReplicationPort=${_seedReplicationPort}
+" >> "${STATE_PROPERTIES}"
+
+cat "${STATE_PROPERTIES}"
