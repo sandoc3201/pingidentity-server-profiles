@@ -159,17 +159,6 @@ PD_STATE=${PD_STATE}
 
 # DRAFT MODE Branch - Currently work in progress
 
-K8S_STATEFUL_SET_NAME=pingdirectory
-K8S_STATEFUL_SET_SERVICE_NAME=pingdirectory
-K8S_CLUSTER=ping-dev-aws-us-east-2.ping-devops.com
-K8S_SEED_CLUSTER=ping-dev-aws-us-east-2.ping-devops.com
-
-LDAPS_PORT=8600
-REPLICATION_PORT=8700
-
-K8S_INSTANCE_NAME_PREFIX=pingdirectory-
-K8S_INSTANCE_NAME_SUFFIX=.ping-dev-aws-us-east-2.ping-devops.com
-K8S_INCREMENT_PORTS=true
 #
 # Check to see if we have the variables for single or multi cluster replication
 #
