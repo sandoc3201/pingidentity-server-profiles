@@ -18,9 +18,11 @@ test -f "${STAGING_DIR}/env_vars" && . "${STAGING_DIR}/env_vars"
 # shellcheck source=pingdirectory.lib.sh
 test -f "${HOOKS_DIR}/pingdirectory.lib.sh" && . "${HOOKS_DIR}/pingdirectory.lib.sh"
 
+_tmpPodPort="${_podLdapPort}"
+test "${LDAP_SECURITY}" == "ssl" && _tmpPort="${_podLdapsPort}"
 echo "Running ldapsearch test on this Server (${_podInstanceName})"
-echo "        ${_podHostname}:${_podLdapsPort}"
-waitUntilLdapUp "${_podHostname}" "${_podLdapsPort}" ""
+echo "        ${_podHostname}:${_tmpPodPort}"
+waitUntilLdapUp "${_podHostname}" "${_tmpPodPort}" ""
 
 echo "
 Updating the Server Instance hostname/ldaps-port:
