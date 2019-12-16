@@ -23,7 +23,7 @@
     --location "${LOCATION}" \
     --instanceName ${_podInstanceName} \
     --ldapPort ${LDAP_PORT} \
-    --ldapsPort ${_podLdapsPort} \
+    --ldapsPort ${LDAPS_PORT} \
     --httpsPort ${HTTPS_PORT} \
     --enableStartTLS \
     ${jvmOptions} \
