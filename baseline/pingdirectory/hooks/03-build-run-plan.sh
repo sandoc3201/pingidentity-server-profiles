@@ -159,6 +159,17 @@ PD_STATE=${PD_STATE}
 
 # DRAFT MODE Branch - Currently work in progress
 
+K8S_STATEFUL_SET_NAME=pingdirectory
+K8S_STATEFUL_SET_SERVICE_NAME=pingdirectory
+K8S_CLUSTER=ping-dev-aws-us-east-2.ping-devops.com
+K8S_SEED_CLUSTER=ping-dev-aws-us-east-2.ping-devops.com
+
+LDAPS_PORT=8600
+REPLICATION_PORT=8700
+
+K8S_INSTANCE_NAME_PREFIX=pingdirectory-
+K8S_INSTANCE_NAME_SUFFIX=.ping-dev-aws-us-east-2.ping-devops.com
+K8S_INCREMENT_PORTS=true
 #
 # Check to see if we have the variables for single or multi cluster replication
 #
@@ -173,29 +184,33 @@ fi
 
 _podName=$(hostname)
 _ordinal=$(echo ${_podName##*-})
-_podInstanceName="$(hostname).${K8S_CLUSTER}"
-_seedInstanceName="${K8S_STATEFUL_SET_NAME}-0.${K8S_CLUSTER}"
+
+_podHostname="$(hostname)"
+_podLdapsPort="${LDAPS_PORT}"
+_podReplicationPort="${REPLICATION_PORT}"
+
+_seedHostname="${K8S_STATEFUL_SET_NAME}-0"
+_seedLdapsPort="${LDAPS_PORT}"
+_seedReplicationPort="${REPLICATION_PORT}"
 
 if test "${_clusterMode}" == "multi"; then
-    # _podHostname="${K8S_STATEFUL_SET_NAME}.${K8S_CLUSTER}"
-    _podHostname="${_podInstanceName}"
-    _podLdapsPort=$(( K8S_LDAPS_SEED_PORT + _ordinal ))
-    LDAPS_PORT=${_podLdapsPort}
-    _podReplicationPort=$(( K8S_REPLICATION_SEED_PORT + _ordinal ))
+    _podHostname="${K8S_INSTANCE_NAME_PREFIX}${_ordinal}${K8S_INSTANCE_NAME_SUFFIX}"
+    _seedHostname="${K8S_INSTANCE_NAME_PREFIX}0${K8S_INSTANCE_NAME_SUFFIX}"
+
+    if test "${K8S_INCREMENT_PORTS}" == "true"; then
+        _podLdapsPort=$(( LDAPS_PORT + _ordinal ))
+        LDAPS_PORT=${_podLdapsPort}
+        _podReplicationPort=$(( REPLICATION_PORT + _ordinal ))
+    fi
 
     # _seedHostname="${K8S_STATEFUL_SET_NAME}.${K8S_SEED_CLUSTER}"
     _seedHostname="${_seedInstanceName}"
     _seedLdapsPort="${K8S_LDAPS_SEED_PORT}"
     _seedReplicationPort="${K8S_REPLICATION_SEED_PORT}"
-else
-    _podHostname="$(hostname)"
-    _podLdapsPort="${LDAPS_PORT}"
-    _podReplicationPort="${REPLICATION_PORT}"
-
-    _seedHostname="${K8S_STATEFUL_SET_NAME}-0"
-    _seedLdapsPort="${LDAPS_PORT}"
-    _seedReplicationPort="${REPLICATION_PORT}"
 fi
+
+_podInstanceName="${_podHostname}"
+_seedInstanceName="${_seedHostname}"
 
 echo "
 #############################################
