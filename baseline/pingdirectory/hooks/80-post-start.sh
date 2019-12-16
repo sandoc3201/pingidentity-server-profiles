@@ -79,7 +79,7 @@ dsreplication enable \
       --bindDN1 "${ROOT_USER_DN}" --bindPasswordFile1 "${ROOT_USER_PASSWORD_FILE}" \
       \
       --host2 "${_podHostname}" \
-      --port2 ${_seedLdapsPort} --useSSL2 \
+      --port2 ${_podLdapsPort} --useSSL2 \
       --replicationPort2 "${_podReplicationPort}" \
       --bindDN2 "${ROOT_USER_DN}" --bindPasswordFile2 "${ROOT_USER_PASSWORD_FILE}" \
       \
