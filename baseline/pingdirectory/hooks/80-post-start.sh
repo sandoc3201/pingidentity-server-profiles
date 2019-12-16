@@ -46,7 +46,7 @@ fi
 
 if test "${_podInstanceName}" == "${_seedInstanceName}"; then
     echo ""
-    echo "We are the SEED_SERVER: ${_seedInstanceName} --> No need to enable replication"
+    echo "We are the SEED Server: ${_seedInstanceName} --> No need to enable replication"
     echo "TODO: We need to check for other servers"
     exit 0
 fi

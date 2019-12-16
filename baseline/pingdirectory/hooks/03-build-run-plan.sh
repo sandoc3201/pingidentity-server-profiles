@@ -163,7 +163,7 @@ PD_STATE=${PD_STATE}
 # Check to see if we have the variables for single or multi cluster replication
 #
 if test -z "${K8S_CLUSTER}" ||
-   test -z "${SEED_CLUSTER}"; then
+   test -z "${K8S_SEED_CLUSTER}"; then
     _clusterMode="single"
     echo "Single Mode"
 else
@@ -183,7 +183,7 @@ if test "${_clusterMode}" == "multi"; then
     _podReplicationPort=$(( K8S_REPLICATION_SEED_PORT + _ordinal ))
 
 
-    _seedHostname="${K8S_STATEFUL_SET_NAME}.${SEED_CLUSTER}"
+    _seedHostname="${K8S_STATEFUL_SET_NAME}.${K8S_SEED_CLUSTER}"
     _seedLdapsPort="${K8S_LDAPS_SEED_PORT}"
     _seedReplicationPort="${K8S_REPLICATION_SEED_PORT}"
 else
