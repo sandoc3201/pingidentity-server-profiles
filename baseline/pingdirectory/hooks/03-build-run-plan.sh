@@ -202,11 +202,6 @@ if test "${_clusterMode}" == "multi"; then
         LDAPS_PORT=${_podLdapsPort}
         _podReplicationPort=$(( REPLICATION_PORT + _ordinal ))
     fi
-
-    # _seedHostname="${K8S_STATEFUL_SET_NAME}.${K8S_SEED_CLUSTER}"
-    _seedHostname="${_seedInstanceName}"
-    _seedLdapsPort="${K8S_LDAPS_SEED_PORT}"
-    _seedReplicationPort="${K8S_REPLICATION_SEED_PORT}"
 fi
 
 _podInstanceName="${_podHostname}"
