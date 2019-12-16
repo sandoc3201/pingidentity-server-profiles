@@ -24,7 +24,7 @@ fi
 
 if test "${LDAP_SECURITY}" == "starttls"; then
     _port="${LDAP_PORT}"
-    _useSSL="flase"
+    _useSSL="false"
     _useStartTLS="true"
 fi
 
@@ -34,7 +34,7 @@ echo "
 #
 hostname=localhost
 port=${_port}
-useSSL=${_port}
+useSSL=${_useSSL}
 useStartTLS=${_useStartTLS}
 trustAll=true
 bindDN=${ROOT_USER_DN}
