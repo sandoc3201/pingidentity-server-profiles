@@ -227,4 +227,8 @@ _seedLdapsPort=${_seedLdapsPort}
 _seedReplicationPort=${_seedReplicationPort}
 " >> "${STATE_PROPERTIES}"
 
+echo "
+LDAPS_PORT=${LDAPS_PORT}
+" >> "${STAGING_DIR}/env_vars"
+
 cat "${STATE_PROPERTIES}"
