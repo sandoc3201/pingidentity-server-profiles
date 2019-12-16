@@ -175,12 +175,10 @@ _podName=$(hostname)
 _ordinal=$(echo ${_podName##*-})
 
 _podHostname="$(hostname)"
-_podLdapPort="${LDAP_PORT}"
 _podLdapsPort="${LDAPS_PORT}"
 _podReplicationPort="${REPLICATION_PORT}"
 
 _seedHostname="${K8S_STATEFUL_SET_NAME}-0"
-_seedLdapPort="${LDAP_PORT}"
 _seedLdapsPort="${LDAPS_PORT}"
 _seedReplicationPort="${REPLICATION_PORT}"
 
@@ -189,8 +187,6 @@ if test "${_clusterMode}" == "multi"; then
     _seedHostname="${K8S_INSTANCE_NAME_PREFIX}0${K8S_INSTANCE_NAME_SUFFIX}"
 
     if test "${K8S_INCREMENT_PORTS}" == "true"; then
-        _podLdapPort=$(( LDAP_PORT + _ordinal ))
-        LDAP_PORT=${_podLdapPort}
         _podLdapsPort=$(( LDAPS_PORT + _ordinal ))
         LDAPS_PORT=${_podLdapsPort}
         _podReplicationPort=$(( REPLICATION_PORT + _ordinal ))
@@ -208,14 +204,12 @@ echo "
 # POD Information
 #     instance name : ${_podInstanceName}
 #          hostname : ${_podHostname}
-#        ldap  port : ${_podLdapPort}
 #        ldaps port : ${_podLdapsPort}
 #  replication port : ${_podReplicationPort}
 #
 # SEED Information
 #     instance name : ${_seedInstanceName}
 #          hostname : ${_seedHostname}
-#        ldap  port : ${_seedLdapPort}
 #        ldaps port : ${_seedLdapsPort}
 #  replication port : ${_seedReplicationPort}
 #############################################
@@ -224,19 +218,16 @@ echo "
 echo "
 _podInstanceName=${_podInstanceName}
 _podHostname=${_podHostname}
-_podLdapPort=${_podLdapPort}
 _podLdapsPort=${_podLdapsPort}
 _podReplicationPort=${_podReplicationPort}
 
 _seedInstanceName=${_seedInstanceName}
 _seedHostname=${_seedHostname}
-_seedLdapPort=${_seedLdapPort}
 _seedLdapsPort=${_seedLdapsPort}
 _seedReplicationPort=${_seedReplicationPort}
 " >> "${STATE_PROPERTIES}"
 
 echo "
-LDAP_PORT=${LDAP_PORT}
 LDAPS_PORT=${LDAPS_PORT}
 REPLICATION_PORT=${REPLICATION_PORT}
 " >> "${STAGING_DIR}/env_vars"

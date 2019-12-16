@@ -18,23 +18,19 @@ test -f "${STAGING_DIR}/env_vars" && . "${STAGING_DIR}/env_vars"
 # shellcheck source=pingdirectory.lib.sh
 test -f "${HOOKS_DIR}/pingdirectory.lib.sh" && . "${HOOKS_DIR}/pingdirectory.lib.sh"
 
-_tmpPodPort="${_podLdapPort}"
-test "${LDAP_SECURITY}" == "ssl" && _tmpPort="${_podLdapsPort}"
 echo "Running ldapsearch test on this Server (${_podInstanceName})"
-echo "        ${_podHostname}:${_tmpPodPort}"
-waitUntilLdapUp "${_podHostname}" "${_tmpPodPort}" ""
+echo "        ${_podHostname}:${_podLdapsPort}"
+waitUntilLdapUp "${_podHostname}" "${_podLdapsPort}" ""
 
 echo "
 Updating the Server Instance hostname/ldaps-port:
          instance: ${_podInstanceName}
          hostname: ${_podHostname}
-        ldap-port: ${_podLdapPort}
        ldaps-port: ${_podLdapsPort}"
 
 dsconfig set-server-instance-prop --no-prompt --quiet \
     --instance-name "${_podInstanceName}" \
     --set hostname:${_podHostname} \
-    --set ldap-port:${_podLdapPort} \
     --set ldaps-port:${_podLdapsPort}
 
 _updateServerInstanceResult=$?
@@ -57,14 +53,11 @@ fi
 
 echo "Running dsreplication enable"
 
-_tmpPort="${_seedLdapPort}"
-test "${LDAP_SECURITY}" == "ssl" && _tmpPort="${_seedLdapsPort}"
-
 echo "Running ldapsearch test on SEED Server (${_seedInstanceName})"
-echo "        ${_seedHostname}:${_tmpPort}"
-waitUntilLdapUp "${_seedHostname}" "${_tmpPort}" ""
+echo "        ${_seedHostname}:${_seedLdapsPort}"
+waitUntilLdapUp "${_seedHostname}" "${_seedLdapsPort}" ""
 
-_masterTopologyInstance=$(ldapsearch --host "${_seedHostname}" --port "${_tmpPort}" --terse --outputFormat json -b "cn=Mirrored subtree manager for base DN cn_Topology_cn_config,cn=monitor" -s base objectclass=* master-instance-name | jq -r .attributes[].values[])
+_masterTopologyInstance=$(ldapsearch --host "${_seedHostname}" --port "${_seedLdapsPort}" --terse --outputFormat json -b "cn=Mirrored subtree manager for base DN cn_Topology_cn_config,cn=monitor" -s base objectclass=* master-instance-name | jq -r .attributes[].values[])
 
 printf "
 #############################################
@@ -77,21 +70,16 @@ printf "
 #############################################
 " "SEED Server" "POD Server" "${_seedHostname}:${_seedReplicationPort}" "${_podHostname}:${_podReplicationPort}"
 
-_conn1="--port1 ${_seedLdapPort} --startTLS1"
-_conn2="--port2 ${_seedLdapPort} --startTLS2"
-test "${LDAP_SECURITY}" == "ssl" && _conn1="--port1 ${_seedLdapsPort} --useSSL1"
-test "${LDAP_SECURITY}" == "ssl" && _conn2="--port2 ${_seedLdapsPort} --useSSL2"
-
 dsreplication enable \
       --retryTimeoutSeconds ${RETRY_TIMEOUT_SECONDS} \
       --trustAll \
       --host1 "${_seedHostname}" \
-      ${conn1} \
+      --port1 ${_seedLdapsPort} --useSSL1 \
       --replicationPort1 "${_seedReplicationPort}" \
       --bindDN1 "${ROOT_USER_DN}" --bindPasswordFile1 "${ROOT_USER_PASSWORD_FILE}" \
       \
       --host2 "${_podHostname}" \
-      ${conn2} \
+      --port2 ${_seedLdapsPort} --useSSL2 \
       --replicationPort2 "${_podReplicationPort}" \
       --bindDN2 "${ROOT_USER_DN}" --bindPasswordFile2 "${ROOT_USER_PASSWORD_FILE}" \
       \
@@ -113,13 +101,10 @@ echo "Getting Topology from SEED Server"
 rm -rf "${TOPOLOGY_FILE}"
 manage-topology export \
     --hostname "${_seedHostname}" \
-    --port "${_tmpPort}" \
+    --port "${_seedLdapsPort}" \
     --exportFilePath "${TOPOLOGY_FILE}"
 
 cat "${TOPOLOGY_FILE}"
-
-_destConn="--portDestination ${_seedLdapPort} --startTLSDestination"
-test "${LDAP_SECURITY}" == "ssl" && _destConn="--portDestination ${_seedLdapsPort} --useSSLDestination"
 
 echo "Initializing replication on POD Server"
 dsreplication initialize \
@@ -128,7 +113,7 @@ dsreplication initialize \
       \
       --topologyFilePath "${TOPOLOGY_FILE}" \
       \
-      --hostDestination "${_podHostname}" ${_destConn} \
+      --hostDestination "${_podHostname}" --portDestination ${_podLdapsPort} --useSSLDestination \
       \
       --baseDN "${USER_BASE_DN}" \
       --adminUID "${ADMIN_USER_NAME}" \
