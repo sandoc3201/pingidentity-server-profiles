@@ -57,7 +57,7 @@ echo "Running ldapsearch test on SEED Server (${_seedInstanceName})"
 echo "        ${_seedHostname}:${_seedLdapsPort}"
 waitUntilLdapUp "${_seedHostname}" "${_seedLdapsPort}" ""
 
-_masterTopologyInstance=$(ldapsearch --host "${_seedHostname}" --port "${_seedLdapsPort}" --terse --outputFormat json -b "cn=Mirrored subtree manager for base DN cn_Topology_cn_config,cn=monitor" -s base objectclass=* master-instance-name | jq -r .attributes[].values[])
+_masterTopologyInstance=$(ldapsearch --hostname "${_seedHostname}" --port "${_seedLdapsPort}" --terse --outputFormat json -b "cn=Mirrored subtree manager for base DN cn_Topology_cn_config,cn=monitor" -s base objectclass=* master-instance-name | jq -r .attributes[].values[])
 
 printf "
 #############################################
