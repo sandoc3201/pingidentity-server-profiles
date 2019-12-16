@@ -18,15 +18,6 @@ test -f "${STAGING_DIR}/env_vars" && . "${STAGING_DIR}/env_vars"
 # shellcheck source=pingdirectory.lib.sh
 test -f "${HOOKS_DIR}/pingdirectory.lib.sh" && . "${HOOKS_DIR}/pingdirectory.lib.sh"
 
-#
-# If we are in GENESIS State, then, no replication will be setup
-#
-if test "${PD_STATE}" == "GENESIS" ; then
-    echo "PD_STATE is GENESIS ==> Replication on this server won't be setup until more instances are added"
-    exit 0
-fi
-
-
 echo "Running ldapsearch test on this Server (${_podInstanceName})"
 echo "        ${_podHostname}:${_podLdapsPort}"
 waitUntilLdapUp "${_podHostname}" "${_podLdapsPort}" ""
@@ -44,6 +35,14 @@ dsconfig set-server-instance-prop --no-prompt --quiet \
 
 _updateServerInstanceResult=$?
 echo "Updating the Server Instance ${_podInstanceName} result=${_updateServerInstanceResult}"
+
+#
+# If we are in GENESIS State, then, no replication will be setup
+#
+if test "${PD_STATE}" == "GENESIS" ; then
+    echo "PD_STATE is GENESIS ==> Replication on this server won't be setup until more instances are added"
+    exit 0
+fi
 
 if test "${_podInstanceName}" == "${_seedInstanceName}"; then
     echo ""
