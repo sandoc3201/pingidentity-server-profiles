@@ -18,6 +18,9 @@ PD_STATE="UNKNOWN"
 SERVER_UUID_FILE="${SERVER_ROOT_DIR}/config/server.uuid"
 ORCHESTRATION_TYPE=$(echo "${ORCHESTRATION_TYPE}" | tr '[:lower:]' '[:upper:]')
 
+_planFile="/tmp/plan-${ORCHESTRATION_TYPE}.txt"
+rm -rf "${_planFile}"
+
 if  test -f "${SERVER_UUID_FILE}" ; then
     . "${SERVER_UUID_FILE}"
 
@@ -33,12 +36,87 @@ else
     fi
 fi
 
+#
+# Create all the POD Server details
+#
+_podName=$(hostname)
+_ordinal=$(echo ${_podName##*-})
+
+_podHostname="$(hostname)"
+_podLdapsPort="${LDAPS_PORT}"
+_podReplicationPort="${REPLICATION_PORT}"
+
+echo "###################################################################################
+#            ORCHESTRATION_TYPE: ${ORCHESTRATION_TYPE}
+#                      HOSTNAME: ${HOSTNAME}
+#                    serverUUID: ${serverUUID}
+#" >> "${_planFile}"
+
 # if running in kubernetes
 if test "${ORCHESTRATION_TYPE}" = "KUBERNETES" ; then
-    if test "$(hostname)" = "${K8S_STATEFUL_SET_NAME}-0" ; then
-        # echo "We are the SEED server (${K8S_STATEFUL_SET_NAME})-0"
+
+    if test -z "${K8S_STATEFUL_SET_NAME}"; then
+        container_failure "03" "KUBERNETES Orchestation ==> K8S_STATEFUL_SET_NAME required"
+    fi
+    #
+    # Check to see if we have the variables for single or multi cluster replication
+    #
+    # If we have both K8S_CLUSTER and K8S_SEED_CLUSTER defined then we are in a 
+    # multi cluster mode.
+    #
+    if test -z "${K8S_CLUSTER}" ||
+    test -z "${K8S_SEED_CLUSTER}"; then
+        _clusterMode="single"
+        echo "Single Mode"
+    else
+        _clusterMode="multi"
+        echo "Multi Mode"
+
+        if test -z "${K8S_INSTANCE_NAME_PREFIX}"; then
+            echo "K8S_INSTANCE_NAME_PREFIX not set.  Defaulting to K8S_STATEFUL_SET_NAME- (${K8S_STATEFUL_SET_NAME}-)"
+            K8S_INSTANCE_NAME_PREFIX="${K8S_STATEFUL_SET_NAME}-"
+        fi
+
+        if test -z "${K8S_INSTANCE_NAME_SUFFIX}"; then
+            echo "K8S_INSTANCE_NAME_SUFFIX not set.  Defaulting to K8S_CLUSTER (${K8S_CLUSTER})"
+            K8S_INSTANCE_NAME_SUFFIX="${K8S_CLUSTER}-"
+        fi
+
+        if test ${K8S_INCREMENT_PORTS} == true; then
+            echo "K8S_INCREMENT_PORTS is used ==> Using different ports for each instance, incremented from LDAPS_PORT (${LDAPS_PORT}) and REPLICATION_PORT (${REPLICATION_PORT})"
+        else
+            echo "K8S_INCREMENT_PORTS not used ==> Using same ports for all instancesLDAPS_PORT (${LDAPS_PORT}) and REPLICATION_PORT (${REPLICATION_PORT})"
+        fi
+    fi
+
+    _seedHostname="${K8S_STATEFUL_SET_NAME}-0"
+    _seedLdapsPort="${LDAPS_PORT}"
+    _seedReplicationPort="${REPLICATION_PORT}"
+
+    #
+    # Multi Cluster Details
+    if test "${_clusterMode}" == "multi"; then
+        _podHostname="${K8S_INSTANCE_NAME_PREFIX}${_ordinal}${K8S_INSTANCE_NAME_SUFFIX}"
+        _seedHostname="${K8S_INSTANCE_NAME_PREFIX}0${K8S_INSTANCE_NAME_SUFFIX}"
+
+        if test "${K8S_INCREMENT_PORTS}" == "true"; then
+            _podLdapsPort=$(( LDAPS_PORT + _ordinal ))
+            LDAPS_PORT=${_podLdapsPort}
+            _podReplicationPort=$(( REPLICATION_PORT + _ordinal ))
+            REPLICATION_PORT=${_podReplicationPort}
+        fi
+    fi
+
+    _podInstanceName="${_podHostname}"
+    _seedInstanceName="${_seedHostname}"
+
+    if test "${_podInstanceName}" = "${_seedInstanceName}" ; then
+        echo "We are the SEED server (${_seedInstanceName})"
 
         if test -z "${serverUUID}" ; then
+            #
+            # First, we will check to see if there are any servers available in
+            # existing cluster
             nslookup ${K8S_STATEFUL_SET_SERVICE_NAME}  2>/dev/null | awk '$0 ~ /^Address / {print $4}' >/tmp/_serviceHosts
             _numHosts=$( grep -v "$(hostname -f)" /tmp/_serviceHosts | wc -l 2> /dev/null)
 
@@ -46,31 +124,34 @@ if test "${ORCHESTRATION_TYPE}" = "KUBERNETES" ; then
             # echo "Number of other services available = ${_numHosts}"
 
             if test ${_numHosts} -eq 0 ; then
+                #
+                # Second, we need to check other clusters
+                if test "${_clusterMode}" == "multi"; then
+                    echo_red "We need to check all 0 servers in each cluster"
+                fi
+
                 PD_STATE="GENESIS"
             fi
         fi
     fi
 
-    echo "
-###################################################################################
-#
-#                      PD_STATE: ${PD_STATE}
-#                      RUN_PLAN: ${RUN_PLAN}
-#
-#            ORCHESTRATION_TYPE: ${ORCHESTRATION_TYPE}
-#         K8S_STATEFUL_SET_NAME: ${K8S_STATEFUL_SET_NAME}
+    echo "#         K8S_STATEFUL_SET_NAME: ${K8S_STATEFUL_SET_NAME}
 # K8S_STATEFUL_SET_SERVICE_NAME: ${K8S_STATEFUL_SET_SERVICE_NAME}
-#                      HOSTNAME: ${HOSTNAME}
-#                    serverUUID: ${serverUUID}
-#" >> "${STATE_PROPERTIES}"
+#
+#                   K8S_CLUSTER: ${K8S_CLUSTER}
+#              K8S_SEED_CLUSTER: ${K8S_SEED_CLUSTER}
+#      K8S_INSTANCE_NAME_PREFIX: ${K8S_INSTANCE_NAME_PREFIX}
+#      K8S_INSTANCE_NAME_SUFFIX: ${K8S_INSTANCE_NAME_SUFFIX}
+#           K8S_INCREMENT_PORTS: ${K8S_INCREMENT_PORTS}
+#
+#" >> "${_planFile}"
+
 
     case "${PD_STATE}" in
         GENESIS)
             echo "#     Startup Plan
 #        - manage-profile setup
-#        - import data
-###################################################################################
-" >> "${STATE_PROPERTIES}"
+#        - import data" >> "${_planFile}"
 
             echo "
 ##################################################################################
@@ -96,18 +177,14 @@ if test "${ORCHESTRATION_TYPE}" = "KUBERNETES" ; then
         SETUP)
             echo "#     Startup Plan
 #        - manage-profile setup
-#        - repl enable (from host 0)
-#        - repl init   (from host 0)
-##################################################################################
-" >> "${STATE_PROPERTIES}"
+#        - repl enable (from SEED Server-${_seedInstanceName})
+#        - repl init   (from topology.json, from SEED Server-${_seedInstanceName})" >> "${_planFile}"
             ;;
         UPDATE)
             echo "#     Startup Plan
 #        - manage-profile update
-#        - repl enable (from any host)
-#        - repl init   (from any host)
-##################################################################################
-" >> "${STATE_PROPERTIES}"
+#        - repl enable (from SEED Server-${_seedInstanceName})
+#        - repl init   (from topology.json, from SEED Server-${_seedInstanceName})" >> "${_planFile}"
             ;;
         *)
             container_failure 08 "Unknown PD_STATE of ($PD_STATE)"
@@ -126,101 +203,51 @@ if test -z "${ORCHESTRATION_TYPE}" && test "${PD_STATE}" = "SETUP"; then
 fi
 
 test "${RUN_PLAN}" = "RESTART" && PD_STATE="UPDATE"
+
 echo "
 ###################################################################################
 #  
 #                      PD_STATE: ${PD_STATE}
 #                      RUN_PLAN: ${RUN_PLAN}
+#" >> "${STATE_PROPERTIES}"
+
+cat "${_planFile}" >> "${STATE_PROPERTIES}"
+
+echo "###################################################################################
 #
-#            ORCHESTRATION_TYPE: ${ORCHESTRATION_TYPE}
-#                      HOSTNAME: ${HOSTNAME}
-#                    serverUUID: ${serverUUID}
+# POD Server Information
+#                 instance name: ${_podInstanceName}
+#                      hostname: ${_podHostname}
+#                    ldaps port: ${_podLdapsPort}
+#              replication port: ${_podReplicationPort}
 #
-#     Startup Plan
-#        - manage-profile setup
-#        - import data
+# SEED Server Information
+#                 instance name: ${_seedInstanceName}
+#                      hostname: ${_seedHostname}
+#                    ldaps port: ${_seedLdapsPort}
+#              replication port: ${_seedReplicationPort}
 ###################################################################################
 " >> "${STATE_PROPERTIES}"
 
-# Display the new state properties
-cat "${STATE_PROPERTIES}"
-
 echo "
+###
+# PingDirectory orchestration, run plan and current state
+###
 ORCHESTRATION_TYPE=${ORCHESTRATION_TYPE}
 RUN_PLAN=${RUN_PLAN}
-
-###
-# PingDirectory Related State Variables
-###
-
 PD_STATE=${PD_STATE}
-" >> "${STATE_PROPERTIES}"
 
-
-# DRAFT MODE Branch - Currently work in progress
-
-#
-# Check to see if we have the variables for single or multi cluster replication
-#
-if test -z "${K8S_CLUSTER}" ||
-   test -z "${K8S_SEED_CLUSTER}"; then
-    _clusterMode="single"
-    echo "Single Mode"
-else
-    _clusterMode="multi"
-    echo "Multi Mode"
-fi
-
-_podName=$(hostname)
-_ordinal=$(echo ${_podName##*-})
-
-_podHostname="$(hostname)"
-_podLdapsPort="${LDAPS_PORT}"
-_podReplicationPort="${REPLICATION_PORT}"
-
-_seedHostname="${K8S_STATEFUL_SET_NAME}-0"
-_seedLdapsPort="${LDAPS_PORT}"
-_seedReplicationPort="${REPLICATION_PORT}"
-
-if test "${_clusterMode}" == "multi"; then
-    _podHostname="${K8S_INSTANCE_NAME_PREFIX}${_ordinal}${K8S_INSTANCE_NAME_SUFFIX}"
-    _seedHostname="${K8S_INSTANCE_NAME_PREFIX}0${K8S_INSTANCE_NAME_SUFFIX}"
-
-    if test "${K8S_INCREMENT_PORTS}" == "true"; then
-        _podLdapsPort=$(( LDAPS_PORT + _ordinal ))
-        LDAPS_PORT=${_podLdapsPort}
-        _podReplicationPort=$(( REPLICATION_PORT + _ordinal ))
-        REPLICATION_PORT=${_podReplicationPort}
-    fi
-fi
-
-_podInstanceName="${_podHostname}"
-_seedInstanceName="${_seedHostname}"
-
-echo "
-#############################################
-# ${_clusterMode} cluster mode
-#############################################
-# POD Information
-#     instance name : ${_podInstanceName}
-#          hostname : ${_podHostname}
-#        ldaps port : ${_podLdapsPort}
-#  replication port : ${_podReplicationPort}
-#
-# SEED Information
-#     instance name : ${_seedInstanceName}
-#          hostname : ${_seedHostname}
-#        ldaps port : ${_seedLdapsPort}
-#  replication port : ${_seedReplicationPort}
-#############################################
-"
-
-echo "
+###
+# POD Server Info
+###
 _podInstanceName=${_podInstanceName}
 _podHostname=${_podHostname}
 _podLdapsPort=${_podLdapsPort}
 _podReplicationPort=${_podReplicationPort}
 
+###
+# SEED Server Info
+###
 _seedInstanceName=${_seedInstanceName}
 _seedHostname=${_seedHostname}
 _seedLdapsPort=${_seedLdapsPort}
