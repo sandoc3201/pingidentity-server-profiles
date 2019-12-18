@@ -83,9 +83,9 @@ if test "${ORCHESTRATION_TYPE}" = "KUBERNETES" ; then
         fi
 
         if test ${K8S_INCREMENT_PORTS} == true; then
-            echo "K8S_INCREMENT_PORTS is used ==> Using different ports for each instance, incremented from LDAPS_PORT (${LDAPS_PORT}) and REPLICATION_PORT (${REPLICATION_PORT})"
+            _incrementPortsMsg="Using different ports for each instance, incremented from LDAPS_PORT (${LDAPS_PORT}) and REPLICATION_PORT (${REPLICATION_PORT})"
         else
-            echo "K8S_INCREMENT_PORTS not used ==> Using same ports for all instancesLDAPS_PORT (${LDAPS_PORT}) and REPLICATION_PORT (${REPLICATION_PORT})"
+            _incrementPortsMsg="K8S_INCREMENT_PORTS not used ==> Using same ports for all instancesLDAPS_PORT (${LDAPS_PORT}) and REPLICATION_PORT (${REPLICATION_PORT})"
         fi
     fi
 
@@ -138,11 +138,11 @@ if test "${ORCHESTRATION_TYPE}" = "KUBERNETES" ; then
     echo "#         K8S_STATEFUL_SET_NAME: ${K8S_STATEFUL_SET_NAME}
 # K8S_STATEFUL_SET_SERVICE_NAME: ${K8S_STATEFUL_SET_SERVICE_NAME}
 #
-#                   K8S_CLUSTER: ${K8S_CLUSTER}
+#                   K8S_CLUSTER: ${K8S_CLUSTER}  (${_clusterMode} cluster)
 #              K8S_SEED_CLUSTER: ${K8S_SEED_CLUSTER}
 #      K8S_INSTANCE_NAME_PREFIX: ${K8S_INSTANCE_NAME_PREFIX}
 #      K8S_INSTANCE_NAME_SUFFIX: ${K8S_INSTANCE_NAME_SUFFIX}
-#           K8S_INCREMENT_PORTS: ${K8S_INCREMENT_PORTS}
+#           K8S_INCREMENT_PORTS: ${K8S_INCREMENT_PORTS} (${_incrementPortsMsg})
 #
 #" >> "${_planFile}"
 
