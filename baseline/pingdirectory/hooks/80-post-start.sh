@@ -57,26 +57,39 @@ echo "Running ldapsearch test on SEED Server (${_seedInstanceName})"
 echo "        ${_seedHostname}:${_seedLdapsPort}"
 waitUntilLdapUp "${_seedHostname}" "${_seedLdapsPort}" ""
 
+#
+# Check the topology prior to enabling replication to see if the Toplogy Master is different
+# than the Seed server
+#
+_priorTopoFile="/tmp/priorTopology.json"
+rm -rf "${_priorTopoFile}"
+manage-topology export \
+    --hostname "${_seedHostname}" \
+    --port "${_seedLdapsPort}" \
+    --exportFilePath "${_priorTopoFile}"
+_priorNumInstances=$(cat ${_priorTopoFile} | jq ".serverInstances | length")
+
 _masterTopologyInstance=$(ldapsearch --hostname "${_seedHostname}" --port "${_seedLdapsPort}" --terse --outputFormat json -b "cn=Mirrored subtree manager for base DN cn_Topology_cn_config,cn=monitor" -s base objectclass=* master-instance-name | jq -r .attributes[].values[])
+_masterTopologyHostname="${_seedHostname}"
+_masterTopologyLdapsPort="${_seedLdapsPort}"
+_masterTopologyReplicationPort="${_seedReplicationPort}"
 
-if test "${_masterTopologyInstance}" = "${_seedInstanceName}"; then
-    echo "Seed Instance is the Topology Master Instance"
-    _masterTopologyHostname="${_seedHostname}"
-    _masterTopologyLdapsPort="${_seedLdapsPort}"
-    _masterTopologyReplicationPort="${_seedReplicationPort}"
+
+if test "${_priorNumInstances}" -eq 1; then
+    echo "Only 1 instance (${_masterTopologyInstance}) found in current topology.  Adding 1st replica"
 else
-    echo "Topology master instance (${_masterTopologyInstance}) isn't seed instance (${_seedInstanceName})"
-    
-    _priorTopoFile
-    rm -rf "${_priorTopoFile}"
-    manage-topology export \
-        --hostname "${_seedHostname}" \
-        --port "${_seedLdapsPort}" \
-        --exportFilePath "${_priorTopoFile}"
-
-    _masterTopologyHostname=$(cat ${_priorTopoFile} | jq ".serverInstances[] | select(.instanceName==\"${_masterTopologyInstance}\") | .hostname")
-    _masterTopologyLdapsPort=$(cat ${_priorTopoFile} | jq ".serverInstances[] | select(.instanceName==\"${_masterTopologyInstance}\") | .ldapsPort")
-    _masterTopologyReplicationPort=$(cat ${_priorTopoFile} | jq ".serverInstances[] | select(.instanceName==\"${_masterTopologyInstance}\") | .replicationPort")
+    if test "${_masterTopologyInstance}" = "${_seedInstanceName}"; then
+        echo "Seed Instance is the Topology Master Instance"
+        _masterTopologyHostname="${_seedHostname}"
+        _masterTopologyLdapsPort="${_seedLdapsPort}"
+        _masterTopologyReplicationPort="${_seedReplicationPort}"
+    else
+        echo "Topology master instance (${_masterTopologyInstance}) isn't seed instance (${_seedInstanceName})"
+        
+        _masterTopologyHostname=$(cat ${_priorTopoFile} | jq ".serverInstances[] | select(.instanceName==\"${_masterTopologyInstance}\") | .hostname")
+        _masterTopologyLdapsPort=$(cat ${_priorTopoFile} | jq ".serverInstances[] | select(.instanceName==\"${_masterTopologyInstance}\") | .ldapsPort")
+        _masterTopologyReplicationPort=$(cat ${_priorTopoFile} | jq ".serverInstances[] | select(.instanceName==\"${_masterTopologyInstance}\") | .replicationPort")
+    fi
 fi
 
 
