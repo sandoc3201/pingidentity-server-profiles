@@ -59,6 +59,27 @@ waitUntilLdapUp "${_seedHostname}" "${_seedLdapsPort}" ""
 
 _masterTopologyInstance=$(ldapsearch --hostname "${_seedHostname}" --port "${_seedLdapsPort}" --terse --outputFormat json -b "cn=Mirrored subtree manager for base DN cn_Topology_cn_config,cn=monitor" -s base objectclass=* master-instance-name | jq -r .attributes[].values[])
 
+if test "${_masterTopologyInstance}" = "${_seedInstanceName}"; then
+    echo "Seed Instance is the Topology Master Instance"
+    _masterTopologyHostname="${_seedHostname}"
+    _masterTopologyLdapsPort="${_seedLdapsPort}"
+    _masterTopologyReplicationPort="${_seedReplicationPort}"
+else
+    echo "Topology master instance (${_masterTopologyInstance}) isn't seed instance (${_seedInstanceName})"
+    
+    _priorTopoFile
+    rm -rf "${_priorTopoFile}"
+    manage-topology export \
+        --hostname "${_seedHostname}" \
+        --port "${_seedLdapsPort}" \
+        --exportFilePath "${_priorTopoFile}"
+
+    _masterTopologyHostname=$(cat ${_priorTopoFile} | jq ".serverInstances[] | select(.instanceName==\"${_masterTopologyInstance}\") | .hostname")
+    _masterTopologyLdapsPort=$(cat ${_priorTopoFile} | jq ".serverInstances[] | select(.instanceName==\"${_masterTopologyInstance}\") | .ldapsPort")
+    _masterTopologyReplicationPort=$(cat ${_priorTopoFile} | jq ".serverInstances[] | select(.instanceName==\"${_masterTopologyInstance}\") | .replicationPort")
+fi
+
+
 printf "
 #############################################
 # Enabling Replication
@@ -68,14 +89,14 @@ printf "
 #   %60s        %-60s
 #   %60s  <-->  %-60s
 #############################################
-" "SEED Server" "POD Server" "${_seedHostname}:${_seedReplicationPort}" "${_podHostname}:${_podReplicationPort}"
+" "Topology Master Server" "POD Server" "${_masterTopologyHostname}:${_masterTopologyReplicationPort}" "${_podHostname}:${_podReplicationPort}"
 
 dsreplication enable \
       --retryTimeoutSeconds ${RETRY_TIMEOUT_SECONDS} \
       --trustAll \
-      --host1 "${_seedHostname}" \
-      --port1 ${_seedLdapsPort} --useSSL1 \
-      --replicationPort1 "${_seedReplicationPort}" \
+      --host1 "${_masterTopologyHostname}" \
+      --port1 ${_masterTopologyLdapsPort} --useSSL1 \
+      --replicationPort1 "${_masterTopologyReplicationPort}" \
       --bindDN1 "${ROOT_USER_DN}" --bindPasswordFile1 "${ROOT_USER_PASSWORD_FILE}" \
       \
       --host2 "${_podHostname}" \
