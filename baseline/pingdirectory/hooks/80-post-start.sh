@@ -86,7 +86,7 @@ else
     else
         echo "Topology master instance (${_masterTopologyInstance}) isn't seed instance (${_seedInstanceName})"
         
-        _masterTopologyHostname=$(cat ${_priorTopoFile} | jq ".serverInstances[] | select(.instanceName==\"${_masterTopologyInstance}\") | .hostname")
+        _masterTopologyHostname=$(cat ${_priorTopoFile} | jq -r ".serverInstances[] | select(.instanceName==\"${_masterTopologyInstance}\") | .hostname")
         _masterTopologyLdapsPort=$(cat ${_priorTopoFile} | jq ".serverInstances[] | select(.instanceName==\"${_masterTopologyInstance}\") | .ldapsPort")
         _masterTopologyReplicationPort=$(cat ${_priorTopoFile} | jq ".serverInstances[] | select(.instanceName==\"${_masterTopologyInstance}\") | .replicationPort")
     fi

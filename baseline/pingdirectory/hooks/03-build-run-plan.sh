@@ -42,7 +42,9 @@ fi
 _podName=$(hostname)
 _ordinal=$(echo ${_podName##*-})
 
-_podHostname="$(hostname)"
+
+_podInstanceName="$(hostname)"
+_podHostname="$(_podInstanceName)"
 _podLdapsPort="${LDAPS_PORT}"
 _podReplicationPort="${REPLICATION_PORT}"
 
@@ -82,6 +84,11 @@ if test "${ORCHESTRATION_TYPE}" = "KUBERNETES" ; then
             K8S_INSTANCE_NAME_SUFFIX="${K8S_CLUSTER}-"
         fi
 
+        if test -z "${K8S_SEED_INSTANCE_NAME_SUFFIX}"; then
+            echo "K8S_SEED_INSTANCE_NAME_SUFFIX not set.  Defaulting to K8S_CLUSTER (${K8S_SEED_CLUSTER})"
+            K8S_SEED_INSTANCE_NAME_SUFFIX="${K8S_SEED_CLUSTER}-"
+        fi
+
         if test ${K8S_INCREMENT_PORTS} == true; then
             _incrementPortsMsg="Using different ports for each instance, incremented from LDAPS_PORT (${LDAPS_PORT}) and REPLICATION_PORT (${REPLICATION_PORT})"
         else
@@ -97,7 +104,7 @@ if test "${ORCHESTRATION_TYPE}" = "KUBERNETES" ; then
     # Multi Cluster Details
     if test "${_clusterMode}" == "multi"; then
         _podHostname="${K8S_INSTANCE_NAME_PREFIX}${_ordinal}${K8S_INSTANCE_NAME_SUFFIX}"
-        _seedHostname="${K8S_INSTANCE_NAME_PREFIX}0${K8S_INSTANCE_NAME_SUFFIX}"
+        _seedHostname="${K8S_INSTANCE_NAME_PREFIX}0${K8S_SEED_INSTANCE_NAME_SUFFIX}"
 
         if test "${K8S_INCREMENT_PORTS}" == "true"; then
             _podLdapsPort=$(( LDAPS_PORT + _ordinal ))
