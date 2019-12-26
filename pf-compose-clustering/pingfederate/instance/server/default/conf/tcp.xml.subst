@@ -33,21 +33,21 @@
 
             bind_addr="${_DOLLAR_}{pf.cluster.bind.address}"
             log_discard_msgs="false"/>
-<!--
+
     <TCPPING initial_hosts="${_DOLLAR_}{pf.cluster.tcp.discovery.initial.hosts}"
              return_entire_cache="true"
              port_range="0"/>
--->
+
 
     <!-- To enable discovery using a file stored in S3, comment out TCPPING, and uncomment the section below.
          Passwords and keys may be encrypted using PingFederate's obfuscate utility.
          See JGroups documentation on S3_PING for further information on the available settings. -->
-   <S3_PING location="$DISCOVERY_S3_LOCATION"
+<!--   <S3_PING location="$DISCOVERY_S3_LOCATION"
              access_key="$DISCOVERY_S3_ACCESS_KEY"
              secret_access_key="$DISCOVERY_S3_SECRET_KEY"
              remove_all_files_on_view_change="true"
              write_data_on_find="true"/>
-
+-->
     <!-- To enable discovery using a file stored in Swift, comment out TCPPING, and uncomment the section below.
          Passwords and keys may be encrypted using PingFederate's obfuscate utility.
          See JGroups documentation on SWIFT_PING for further information on the available settings. -->
