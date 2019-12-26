@@ -13,6 +13,9 @@
 # console and API runs. Default is 9999.
 pf.admin.https.port=9999
 
+pf.custom.var1=${VAR1}
+pf.custom.var2=$VAR2
+
 #
 # This property defines the host name of this machine that will be used in
 # PingFederate's administrative API to represent itself to clients.
