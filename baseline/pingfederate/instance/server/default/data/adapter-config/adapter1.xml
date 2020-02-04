@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urn:AdapterConfiguration authnCtxClassRef="" isInheritAttributeSettings="false" isInheritAttributeMapping="false" maskOgnlValues="false" isInheritExtendedContractAttributes="false" name="HTMLFormPD" xmlns:urn="urn:sourceid.org:saml2:adapter:conf">
+<urn:AdapterConfiguration authnCtxClassRef="" isInheritAttributeSettings="false" isInheritAttributeMapping="false" maskOgnlValues="false" isInheritExtendedContractAttributes="false" name="adapter1" xmlns:urn="urn:sourceid.org:saml2:adapter:conf">
     <urn:Fields>
         <urn:Field name="Challenge Retries">3</urn:Field>
         <urn:Field name="Session State">None</urn:Field>
@@ -13,7 +13,7 @@
         <urn:Field name="Show Password Expiring Warning">false</urn:Field>
         <urn:Field name="Password Reset Type">NONE</urn:Field>
         <urn:Field name="Account Unlock">false</urn:Field>
-        <urn:Field name="Local Identity Profile">RBSQIwi5KWYN9ZGK</urn:Field>
+        <urn:Field name="Local Identity Profile"/>
         <urn:Field name="Enable Username Recovery">false</urn:Field>
         <urn:Field name="Login Template">html.form.login.template.html</urn:Field>
         <urn:Field name="Logout Path"/>
@@ -89,18 +89,24 @@
     <urn:Tables>
         <urn:Table name="Credential Validators">
             <urn:Row>
-                <urn:Field name="Password Credential Validator Instance">pingdirectory</urn:Field>
+                <urn:Field name="Password Credential Validator Instance">pcv1</urn:Field>
             </urn:Row>
         </urn:Table>
     </urn:Tables>
     <urn:ExtendedContractAttributes>
-        <urn:AttributeName>entryUUID</urn:AttributeName>
+        <urn:AttributeName>mail</urn:AttributeName>
     </urn:ExtendedContractAttributes>
     <urn:UniqueKeyField>username</urn:UniqueKeyField>
     <urn:AttributeMapping>
-        <urn1:AttributeMap Name="entryUUID" Type="Adapter" Value="entryUUID" xmlns:urn1="urn:sourceid.org:saml2:metadata-extension:v2"/>
+        <urn1:AttributeMap Name="mail" Type="Adapter" Value="mail" xmlns:urn1="urn:sourceid.org:saml2:metadata-extension:v2"/>
         <urn1:AttributeMap Name="policy.action" Type="Adapter" Value="policy.action" xmlns:urn1="urn:sourceid.org:saml2:metadata-extension:v2"/>
         <urn1:AttributeMap Name="username" Type="Adapter" Value="username" xmlns:urn1="urn:sourceid.org:saml2:metadata-extension:v2"/>
+        <urn1:AttributeSource Id="localodsee" Description="localodsee" Type="LDAP" DataSourceId="LDAP-E4F7872106C67F4C382C7F6AFDA5C6E00FD57841" xmlns:urn1="urn:sourceid.org:saml2:metadata-extension:v2">
+            <urn1:Parameter Name="filter" Value="uid=${username}"/>
+            <urn1:Parameter Name="search_base" Value="dc=example,dc=com"/>
+            <urn1:Parameter Name="search_scope" Value="SUBTREE_SCOPE"/>
+            <urn1:Parameter Name="memberof_nested_group" Value="false"/>
+        </urn1:AttributeSource>
         <urn1:TokenAuthorizationIssuanceCriteria xmlns:urn1="urn:sourceid.org:saml2:metadata-extension:v2"/>
     </urn:AttributeMapping>
 </urn:AdapterConfiguration>

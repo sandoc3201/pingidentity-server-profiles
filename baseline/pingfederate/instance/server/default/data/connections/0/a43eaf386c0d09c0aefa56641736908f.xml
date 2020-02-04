@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<md:EntityDescriptor entityID="https://httpbin.org" urn:name="Dummy SP Connection" ID="gpFvXmhDHSRUSHWLZLZ_XBIU_YK" urn:LogLevel="STANDARD" urn:isActive="true" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:urn="urn:sourceid.org:saml2:metadata-extension:v2">
+<md:EntityDescriptor entityID="entityID1" urn:name="entityID1" ID="tpDhsd-sUFtSIgVdJ6et1yNFqJi" urn:LogLevel="STANDARD" urn:isActive="true" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:urn="urn:sourceid.org:saml2:metadata-extension:v2">
     <md:Extensions>
-        <urn:EntityExtension PFVersion="9.2.1.1" LicenseGroup="">
-            <urn:DigitialSignatureAliases SigningKeyAlias="v8m5h9qrw85dgmndgv47k76xz" includeX509inXmlSig="false" includeRawKeyInXmlSig="false" SigningAlgorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+        <urn:EntityExtension PFVersion="9.2.0.10" LicenseGroup="">
+            <urn:DigitialSignatureAliases SigningKeyAlias="5wb7wco9pg40yq7quu0dvv4ht" includeX509inXmlSig="false" includeRawKeyInXmlSig="false" SigningAlgorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
             <urn:Encryption>
                 <urn:EncryptionPolicy EncryptionAlgorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc" KeyTransportAlgorithm="http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p" EncryptAssertion="false" EncryptSubjectNameID="false" SLOEncryptSubjectNameID="false"/>
                 <urn:DecryptionPolicy AssertionEncrypted="false" SubjectNameIDEncrypted="false" AttributeEncrypted="false" SLOSubjectNameIDEncrypted="false"/>
             </urn:Encryption>
-            <urn:ConnectionTemplateProperties/>
             <urn:MetadataUrlId xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
             <urn:enableAutoMetadataUpdate>false</urn:enableAutoMetadataUpdate>
             <urn:AdditionalAllowedEntitiesConfiguration>
@@ -19,22 +18,27 @@
     </md:Extensions>
     <md:SPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol" AuthnRequestsSigned="false" WantAssertionsSigned="false" SignResponseAsRequired="true">
         <md:Extensions>
-            <urn:RoleExtension ArtifactTimeoutSeconds="60" LastModified="2019-02-28T22:30:59.255Z">
-                <urn:IncomingBindings Artifact="true" POST="true" Redirect="true" SOAP="true"/>
-                <urn:EnabledProfiles IDPInitiatedSSO="true" IDPInitiatedSLO="false" SPInitiatedSSO="false" SPInitiatedSLO="false"/>
+            <urn:RoleExtension ArtifactTimeoutSeconds="60" LastModified="2020-01-31T21:18:43.804-08:00">
+                <urn:IncomingBindings Artifact="false" POST="true" Redirect="true" SOAP="false"/>
+                <urn:EnabledProfiles IDPInitiatedSSO="true" IDPInitiatedSLO="false" SPInitiatedSSO="true" SPInitiatedSLO="false"/>
                 <urn:SP AssertionValidityAfterMinutes="5" AssertionValidityBeforeMinutes="5" ConnectionTargetType="Standard" EnableCDCDuringSSO="false">
-                    <urn:C2cContractToAssertionMapping AbortIfNotFoundInAnyDataSources="false" RestrictVirtualServerIds="false" C2cContractId="Zxp6N6W5PH9onACT" C2cContractName="simplecontract">
+                    <urn:AdapterToAssertionMapping AbortIfNotFoundInAnyDataSources="false" RestrictVirtualServerIds="false" AdapterInstanceId="adapter1">
                         <urn:DefaultAttributeMapping>
-                            <urn:AttributeMap Name="SAML_SUBJECT" Type="Authentication Policy Contract" Value="subject"/>
+                            <urn:AttributeMap Name="mail" Type="Adapter" Value="mail"/>
+                            <urn:AttributeMap Name="SAML_SUBJECT" Type="Adapter" Value="username"/>
                             <urn:TokenAuthorizationIssuanceCriteria/>
                         </urn:DefaultAttributeMapping>
-                    </urn:C2cContractToAssertionMapping>
+                    </urn:AdapterToAssertionMapping>
                     <urn:NameIdentifierMappingType IncludeAdditionalAttributes="false" IncludeAdditionalTransientAttributes="false"/>
                 </urn:SP>
             </urn:RoleExtension>
         </md:Extensions>
         <md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>
-        <md:AssertionConsumerService index="0" Location="https://httpbin.org/anything" Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" isDefault="true"/>
+        <md:AssertionConsumerService index="0" Location="https://www.yahoo.com" Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" isDefault="true"/>
+        <md:AttributeConsumingService index="0">
+            <md:ServiceName xml:lang="en">AttributeContract</md:ServiceName>
+            <md:RequestedAttribute Name="mail" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"/>
+        </md:AttributeConsumingService>
     </md:SPSSODescriptor>
     <md:RoleDescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol" xsi:type="urn:PFAvailableCertsRoleDescriptorType" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
     <md:ContactPerson contactType="administrative"/>
