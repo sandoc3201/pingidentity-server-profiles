@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urn:PluginConfiguration isInheritExtendedContractAttributes="false" name="pcv1" xmlns:urn="urn:sourceid.org:saml2:adapter:conf">
+<urn:PluginConfiguration isInheritExtendedContractAttributes="false" name="pingdirectory" xmlns:urn="urn:sourceid.org:saml2:adapter:conf">
     <urn:Fields>
-        <urn:Field name="LDAP Datastore">LDAP-E4F7872106C67F4C382C7F6AFDA5C6E00FD57841</urn:Field>
-        <urn:Field name="Search Base">dc=example,dc=com</urn:Field>
-        <urn:Field name="Search Filter">uid=${username}</urn:Field>
+        <urn:Field name="LDAP Datastore">LDAP-D803C87FAB2ADFB4B0A947B64BA6F0C6093A5CA3</urn:Field>
+        <urn:Field name="Search Base">${USER_BASE_DN}</urn:Field>
+        <urn:Field name="Search Filter">(&amp;(objectClass=person)(|(mail=${_DOLLAR_}{username})(cn=${_DOLLAR_}{username})(uid=${_DOLLAR_}{username})))</urn:Field>
         <urn:Field name="Scope of Search">Subtree</urn:Field>
-        <urn:Field name="Case-Sensitive Matching">true</urn:Field>
+        <urn:Field name="Case-Sensitive Matching">false</urn:Field>
         <urn:Field name="Display Name Attribute">displayName</urn:Field>
         <urn:Field name="Mail Attribute">mail</urn:Field>
         <urn:Field name="SMS Attribute"/>
@@ -26,5 +26,7 @@
     <urn:Tables>
         <urn:Table name="Authentication Error Overrides"/>
     </urn:Tables>
-    <urn:ExtendedContractAttributes/>
+    <urn:ExtendedContractAttributes>
+        <urn:AttributeName>entryUUID</urn:AttributeName>
+    </urn:ExtendedContractAttributes>
 </urn:PluginConfiguration>
