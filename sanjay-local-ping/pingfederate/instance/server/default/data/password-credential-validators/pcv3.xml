@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urn:PluginConfiguration isInheritExtendedContractAttributes="false" name="pcv3" xmlns:urn="urn:sourceid.org:saml2:adapter:conf">
+    <urn:Fields/>
+    <urn:AdvancedFields/>
+    <urn:Tables>
+        <urn:Table name="Users">
+            <urn:Row>
+                <urn:Field name="Username">user3</urn:Field>
+                <urn:Field name="Password">B3RPz8HjZb_4MTk08pVl5vBVg8FF8j4fXURrOOwWh38.EFrXlk2D.2</urn:Field>
+                <urn:Field name="Confirm Password">y-un1R3AZaV-i3AslEbgTPwYC-JwDoChsQ7c_1gMRjE.y-B8N9Vp.2</urn:Field>
+            </urn:Row>
+            <urn:Row>
+                <urn:Field name="Username">user4</urn:Field>
+                <urn:Field name="Password">dZEdYsXwUTi2tW1jeVyRHIYrwvI8yWDhSHnJcCEwp4I.Zed9wFfM.2</urn:Field>
+                <urn:Field name="Confirm Password">1J3pbvmViTVL0tKjtt9EJhJTXYr-h91GKtcmumj5GX4.7EO2qn-s.2</urn:Field>
+            </urn:Row>
+        </urn:Table>
+    </urn:Tables>
+</urn:PluginConfiguration>
